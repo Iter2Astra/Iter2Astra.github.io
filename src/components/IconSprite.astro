@@ -1,5 +1,7 @@
 ---
-import type { Icon as IconName } from "virtual:astro-icon";
+// virtual:astro-icon 的类型声明在 astro check 下无法解析（astro-icon 1.2.0 的类型文件不被加载），
+// 直接使用字符串类型替代，IconName 即 iconify 图标名。
+type IconName = string;
 import { Icon } from "astro-icon/components";
 import { navBarConfig } from "@/config";
 
