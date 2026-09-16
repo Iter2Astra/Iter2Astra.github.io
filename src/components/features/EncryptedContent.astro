@@ -1,0 +1,227 @@
+---
+import I18nKey from "@i18n/i18nKey";
+import { i18n } from "@i18n/translation";
+import { encryptContent } from "@utils/crypto-utils";
+import { Icon } from "astro-icon/components";
+
+interface Props {
+	password: string;
+	slug: string;
+	hint?: string;
+}
+
+const { password, slug, hint = "" } = Astro.props;
+
+const rawHtml = await Astro.slots.render("default");
+const encryptedData = encryptContent(rawHtml, password, slug);
+
+const labels = {
+	protected: i18n(I18nKey.passwordProtected),
+	desc: i18n(I18nKey.passwordProtectedDesc),
+	hint: i18n(I18nKey.passwordHint),
+	placeholder: i18n(I18nKey.passwordPlaceholder),
+	submit: i18n(I18nKey.passwordSubmit),
+	error: i18n(I18nKey.passwordError),
+};
+---
+
+<div
+  id="encrypted-container"
+  data-encrypted={encryptedData}
+  data-slug={slug}
+>
+  <!-- Lock UI -->
+  <div id="password-ui" class="flex justify-center py-16 px-4">
+    <div class="card-base flex flex-col items-center gap-3 max-w-100 w-full p-8">
+      <Icon name="material-symbols:shield-lock" class="text-8xl text-(--primary)" />
+
+      <h2 class="text-lg font-bold text-black/80 dark:text-white/80 m-0">{labels.protected}</h2>
+      <p class="text-sm text-black/40 dark:text-white/40 text-center m-0">{labels.desc}</p>
+
+      {hint && (
+        <p class="text-xs text-black/30 dark:text-white/30 text-center m-0">{labels.hint}: {hint}</p>
+      )}
+
+      <form id="password-form" class="w-full mt-2 space-y-2">
+        <input
+          id="password-input"
+          name="password"
+          type="password"
+          placeholder={labels.placeholder}
+          autocomplete="off"
+          class="w-full px-3 py-2 rounded-lg text-sm bg-black/5 dark:bg-white/10
+                 border border-black/8 dark:border-white/8
+                 text-black/80 dark:text-white/80 placeholder-black/25 dark:placeholder-white/25
+                 outline-hidden focus:border-(--primary) transition"
+        />
+        <button
+          type="submit"
+          class="w-full py-2 rounded-lg text-sm font-medium bg-(--primary) text-white dark:text-black/70
+                 hover:opacity-85 active:scale-[0.98] transition-all"
+        >
+          {labels.submit}
+        </button>
+      </form>
+
+      <p id="password-error" class="text-xs text-red-500 dark:text-red-400 m-0 hidden">{labels.error}</p>
+    </div>
+  </div>
+
+  <!-- Decrypted content injected here -->
+  <div id="decrypted-content" class="hidden"></div>
+</div>
+
+<script>
+	// TODO(HTTPS): 临时方案 —— crypto.subtle（Web Crypto）只在安全上下文（HTTPS / localhost）暴露，
+	// 站点当前无 HTTPS、通过域名走纯 HTTP 访问，解密会直接失败，因此改用纯 JS 实现
+	// （@noble/hashes + @noble/ciphers），算法与构建时 src/utils/crypto-utils.ts 完全一致：
+	// PBKDF2-SHA256(100000 次) 派生密钥 + AES-256-GCM，密文格式 base64(salt[16]+iv[12]+tag[16]+ciphertext)。
+	// 域名审核通过并部署 HTTPS 后，请改回 crypto.subtle 实现并卸载这两个依赖，
+	// 还原步骤见 docs/encrypted-content-http-note.md。
+	import { gcm } from "@noble/ciphers/aes.js";
+	import { pbkdf2Async } from "@noble/hashes/pbkdf2.js";
+	import { sha256 } from "@noble/hashes/sha2.js";
+
+	const ITERATIONS = 100000;
+	const SALT_LEN = 16;
+	const IV_LEN = 12;
+	const TAG_LEN = 16;
+
+	function base64ToBytes(b64: string): Uint8Array {
+		const bin = atob(b64);
+		const bytes = new Uint8Array(bin.length);
+		for (let i = 0; i < bin.length; i++) {
+			bytes[i] = bin.charCodeAt(i);
+		}
+		return bytes;
+	}
+
+	function concatBytes(a: Uint8Array, b: Uint8Array): Uint8Array {
+		const out = new Uint8Array(a.length + b.length);
+		out.set(a);
+		out.set(b, a.length);
+		return out;
+	}
+
+	async function decrypt(encryptedData: string, pwd: string): Promise<string> {
+		const raw = base64ToBytes(encryptedData);
+		const salt = raw.slice(0, SALT_LEN);
+		const iv = raw.slice(SALT_LEN, SALT_LEN + IV_LEN);
+		const authTag = raw.slice(SALT_LEN + IV_LEN, SALT_LEN + IV_LEN + TAG_LEN);
+		const ciphertext = raw.slice(SALT_LEN + IV_LEN + TAG_LEN);
+
+		const key = await pbkdf2Async(sha256, new TextEncoder().encode(pwd), salt, {
+			c: ITERATIONS,
+			dkLen: 32,
+		});
+		// noble 的 gcm.decrypt 要求密文与 authTag 拼接，与原 Web Crypto 写法一致
+		const decrypted = gcm(key, iv).decrypt(concatBytes(ciphertext, authTag));
+		return new TextDecoder().decode(decrypted);
+	}
+
+	function showContent(contentEl: HTMLElement, ui: HTMLElement, html: string) {
+		contentEl.innerHTML = html;
+		contentEl.classList.remove("hidden");
+		ui.classList.add("hidden");
+		// Scripts injected via innerHTML are inert — re-create them so they execute
+		const scripts = contentEl.querySelectorAll("script");
+		for (let i = 0; i < scripts.length; i++) {
+			const old = scripts[i];
+			const ns = document.createElement("script");
+			for (let j = 0; j < old.attributes.length; j++) {
+				ns.setAttribute(old.attributes[j].name, old.attributes[j].value);
+			}
+			ns.textContent = old.textContent;
+			old.parentNode?.replaceChild(ns, old);
+		}
+		// Re-init components after content is in DOM
+		setTimeout(() => {
+			document.dispatchEvent(new CustomEvent("password:decrypted"));
+		}, 100);
+
+		// 初始化解密内容中图片的 LQIP 淡入
+		const placeholders = contentEl.querySelectorAll(".lqip-placeholder");
+		for (let i = 0; i < placeholders.length; i++) {
+			const placeholder = placeholders[i];
+			const parent = placeholder.parentElement;
+			if (!parent) continue;
+			const img = parent.querySelector("img");
+			if (!img) continue;
+			if (img.complete && img.naturalWidth > 0) {
+				img.style.opacity = "1";
+				placeholder.classList.add("loaded");
+			} else {
+				img.addEventListener(
+					"load",
+					() => {
+						img.style.opacity = "1";
+						placeholder.classList.add("loaded");
+					},
+					{ once: true },
+				);
+				img.addEventListener(
+					"error",
+					() => {
+						placeholder.classList.add("loaded");
+					},
+					{ once: true },
+				);
+			}
+		}
+	}
+
+	function setup(container: HTMLElement) {
+		const encryptedData = container.getAttribute("data-encrypted");
+		const slug = container.getAttribute("data-slug");
+		if (!encryptedData || !slug) return;
+		const cacheKey = `pw:${slug}`;
+
+		const ui = document.getElementById("password-ui");
+		const form = document.getElementById("password-form");
+		const input = document.getElementById("password-input") as HTMLInputElement | null;
+		const errorEl = document.getElementById("password-error");
+		const contentEl = document.getElementById("decrypted-content");
+		if (!ui || !form || !input || !errorEl || !contentEl) return;
+
+		const showError = () => {
+			errorEl.classList.remove("hidden");
+		};
+
+		const hideError = () => {
+			errorEl.classList.add("hidden");
+		};
+
+		// Handle form submit
+		form.addEventListener("submit", (e) => {
+			e.preventDefault();
+			const pwd = input.value.trim();
+			if (!pwd) return;
+			hideError();
+			decrypt(encryptedData, pwd)
+				.then((html) => {
+					sessionStorage.setItem(cacheKey, pwd);
+					showContent(contentEl, ui, html);
+				})
+				.catch(() => {
+					showError();
+				});
+		});
+
+		// Try cached password
+		const cached = sessionStorage.getItem(cacheKey);
+		if (cached) {
+			decrypt(encryptedData, cached)
+				.then((html) => {
+					showContent(contentEl, ui, html);
+				})
+				.catch(() => {
+					sessionStorage.removeItem(cacheKey);
+				});
+		}
+	}
+
+	const container = document.getElementById("encrypted-container");
+	if (container) {
+		setup(container);
+	}
+</script>

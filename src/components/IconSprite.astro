@@ -1,0 +1,59 @@
+---
+import type { Icon as IconName } from "virtual:astro-icon";
+import { Icon } from "astro-icon/components";
+import { navBarConfig } from "@/config";
+
+// astro-icon 每个图标只在当页「首个渲染的实例」内嵌 <symbol>，其余实例均为 <use> 引用。
+// 导航栏、移动端抽屉、音乐面板位于 swup 容器之外、切页时不更新；而 symbol 可能嵌在
+// swup 容器内（如文章 meta 的标签图标），切页时随容器被移除，<use> 解析不到定义，
+// 图标就会消失（从文章页切回首页时导航栏/侧边栏图标丢失即由此而来）。
+// 本组件在所有页面内容之前渲染一遍常驻 UI 用到的图标，把 symbol 锚定在
+// swup 永不替换的 DOM 里；新增常驻 UI 图标时记得同步补充到 chromeIcons。
+const navIcons = navBarConfig.links.flatMap((link) => [
+	link.icon,
+	...(link.children ?? []).map((child) => child.icon),
+]);
+
+const chromeIcons = [
+	// Navbar 与音乐面板
+	"material-symbols:home-pin-outline",
+	"material-symbols:menu-rounded",
+	"material-symbols:music-note-rounded",
+	"material-symbols:palette-outline",
+	"material-symbols:pause-rounded",
+	"material-symbols:play-arrow-rounded",
+	"material-symbols:repeat-one-rounded",
+	"material-symbols:repeat-rounded",
+	"material-symbols:shuffle-rounded",
+	"material-symbols:skip-next-rounded",
+	"material-symbols:skip-previous-rounded",
+	"material-symbols:subtitles-off-outline-rounded",
+	"material-symbols:subtitles-outline-rounded",
+	"material-symbols:sync-rounded",
+	"material-symbols:volume-off-rounded",
+	"material-symbols:volume-up-rounded",
+	"mdi:playlist-music",
+	// 下拉菜单 / 移动端抽屉的箭头与外链标记
+	"material-symbols:keyboard-arrow-down-rounded",
+	"material-symbols:chevron-right-rounded",
+	"material-symbols:close-rounded",
+	"fa7-solid:arrow-up-right-from-square",
+];
+
+const icons = [
+	...new Set([...navIcons, ...chromeIcons].filter(Boolean)),
+] as IconName[];
+---
+
+<div aria-hidden="true" class="icon-sprite">
+	{icons.map((name) => <Icon name={name} />)}
+</div>
+
+<style>
+	.icon-sprite {
+		position: absolute;
+		width: 0;
+		height: 0;
+		overflow: hidden;
+	}
+</style>
