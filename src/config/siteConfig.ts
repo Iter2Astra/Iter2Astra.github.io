@@ -49,18 +49,10 @@ export const siteConfig: SiteConfig = {
 	site_url: "https://Iter2Astra.github.io/",
 
 	// 站点描述
-	description:
-		"Iter2Astra的个人博客",
+	description: "Iter2Astra的个人博客",
 
 	// 站点关键词
-	keywords: [
-		"Iter2Astra",
-		"Astro",
-		"ACGN",
-		"博客",
-		"技术博客",
-		"静态博客",
-	],
+	keywords: ["Iter2Astra", "Astro", "ACGN", "博客", "技术博客", "静态博客"],
 
 	// 主题色
 	themeColor: {

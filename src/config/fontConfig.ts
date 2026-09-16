@@ -93,7 +93,12 @@ export const fontsList: FontDefinition[] = [
 				},
 			],
 		},
-		fallbacks: ["PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", "sans-serif"],
+		fallbacks: [
+			"PingFang SC",
+			"Microsoft YaHei",
+			"Noto Sans CJK SC",
+			"sans-serif",
+		],
 	},
 	// 中文标题字体：MiSans Light（细字重，用于横幅标题等大字号场景）
 	// 文件：public/assets/fonts/MiSans-Light.ttf
@@ -110,7 +115,12 @@ export const fontsList: FontDefinition[] = [
 				},
 			],
 		},
-		fallbacks: ["PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", "sans-serif"],
+		fallbacks: [
+			"PingFang SC",
+			"Microsoft YaHei",
+			"Noto Sans CJK SC",
+			"sans-serif",
+		],
 	},
 	// ─── 本地字体示例 ───
 	// 使用步骤：
