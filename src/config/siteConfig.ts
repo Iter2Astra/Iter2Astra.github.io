@@ -40,21 +40,21 @@ const pages = resolvePageToggles({
 
 export const siteConfig: SiteConfig = {
 	// 站点标题
-	title: "远山",
+	title: "Iter2Astra",
 
 	// 站点副标题
-	subtitle: "远山 Blog",
+	subtitle: "Iter2Astra Blog",
 
 	// 站点 URL
-	site_url: "http://111.229.163.132/",
+	site_url: "https://Iter2Astra.github.io/",
 
 	// 站点描述
 	description:
-		"远山的个人博客",
+		"Iter2Astra的个人博客",
 
 	// 站点关键词
 	keywords: [
-		"远山",
+		"Iter2Astra",
 		"Astro",
 		"ACGN",
 		"博客",
