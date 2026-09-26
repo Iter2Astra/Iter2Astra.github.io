@@ -42,24 +42,70 @@ export const musicPlayerConfig: MusicPlayerConfig = {
 
 	// 本地音乐配置（当 mode 为 'local' 时使用）
 	// 1. 支持传入歌词文件的路径
-	// lrc: "/assets/music/lrc/使一颗心免于哀伤-哼唱.lrc",
+	// lrc: "/assets/music/lrc/01. Remember.lrc",
 	// 2. 或者直接填入歌词字符串内容
 	// lrc: "[00:00.00]歌词内容...",
 	local: {
 		playlist: [
 			{
-				name: "琴弦呀，琴弦",
-				artist: "HOYO-MiX",
-				url: "/assets/music/琴弦呀，琴弦.m4a",
-				cover: "/assets/music/cover/悯宥慈怜之垠.png",
-				lrc: "",
+				name: "Remember",
+				artist: "",
+				url: "/assets/music/01. Remember.m4a",
+				cover: "/assets/music/cover/p2928981286.webp",
 			},
 			{
-				name: "我曾经爱过你",
-				artist: "HOYO-MiX",
-				url: "/assets/music/我曾经爱过.m4a",
-				cover: "/assets/music/cover/悯宥慈怜之垠.png",
-				lrc: "",
+				name: "星降る海",
+				artist: "",
+				url: "/assets/music/02. 星降る海.m4a",
+				cover: "/assets/music/cover/p2928981286.webp",
+			},
+			{
+				name: "私は、わたしの事が好き。",
+				artist: "",
+				url: "/assets/music/03. 私は、わたしの事が好き。.m4a",
+				cover: "/assets/music/cover/p2928981286.webp",
+			},
+			{
+				name: "ワールドイズマイン (かぐや&月見ヤチヨ ver.) [CPK! Remix]",
+				artist: "",
+				url: "/assets/music/04. ワールドイズマイン (かぐや&月見ヤチヨ ver.) [CPK! Remix].m4a",
+				cover: "/assets/music/cover/p2928981286.webp",
+			},
+			{
+				name: "Ex-Otogibanashi",
+				artist: "",
+				url: "/assets/music/05. Ex-Otogibanashi.m4a",
+				cover: "/assets/music/cover/p2928981286.webp",
+			},
+			{
+				name: "ハッピーシンセサイザ (Cover)",
+				artist: "",
+				url: "/assets/music/06. ハッピーシンセサイザ (Cover).m4a",
+				cover: "/assets/music/cover/p2928981286.webp",
+			},
+			{
+				name: "瞬間、シンフォニー。",
+				artist: "",
+				url: "/assets/music/07. 瞬間、シンフォニー。.m4a",
+				cover: "/assets/music/cover/p2928981286.webp",
+			},
+			{
+				name: "Reply",
+				artist: "",
+				url: "/assets/music/08. Reply.m4a",
+				cover: "/assets/music/cover/p2928981286.webp",
+			},
+			{
+				name: "ray (超かぐや姫！ Version)",
+				artist: "",
+				url: "/assets/music/09. ray (超かぐや姫！ Version).m4a",
+				cover: "/assets/music/cover/p2928981286.webp",
+			},
+			{
+				name: "メルト (かぐや ver.) [CPK! Remix]",
+				artist: "",
+				url: "/assets/music/10. メルト (かぐや ver.) [CPK! Remix].m4a",
+				cover: "/assets/music/cover/p2928981286.webp",
 			},
 		],
 	},
